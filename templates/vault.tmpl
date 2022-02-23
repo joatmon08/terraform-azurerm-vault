@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Install curl if it's not already there
+sudo apt-get update
+sudo apt-get install curl -y
+
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo apt-get update && sudo apt-get install vault=${vault_version} -y
+
+cat <<EOF > /etc/vault.d/vault.hcl
+ui = true
+
+storage "file" {
+  path = "/opt/vault/data"
+}
+
+listener "tcp" {
+  address       = "0.0.0.0:8200"
+  tls_disable   = true
+}
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable vault
+sudo systemctl start vault
